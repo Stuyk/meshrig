@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MeshRig: Rig Any Mesh in Minutes</title>
+  <meta name="description" content="Open a .blend, pick a starting skeleton, drag what it got wrong, skin, test and save. MeshRig writes a normal Blender armature with weights and IK. Free and open source." />
+  <meta property="og:title" content="MeshRig: Rig Any Mesh in Minutes" />
+  <meta property="og:description" content="Skeleton, skin weights and IK for any mesh in a .blend, in minutes." />
+  <meta property="og:image" content="screenshots/skeleton.png" />
+  <meta property="og:type" content="website" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="MeshRig: Rig Any Mesh in Minutes" />
+  <meta name="twitter:description" content="Skeleton, skin weights and IK for any mesh in a .blend, in minutes." />
+  <meta name="twitter:image" content="screenshots/skeleton.png" />
+  <link rel="icon" href="icon.png" />
+  <style>
+    /* Same tokens as the app (src/renderer/src/index.css). */
+    :root {
+      --bg-main: #242426;
+      --bg-panel: #2e2e32;
+      --bg-panel-header: #28282b;
+      --bg-input: #1e1e20;
+      --bg-deep: #18181a;
+      --border-color: #1c1c1e;
+      --border-subtle: #38383e;
+      --accent: #0084ff;
+      --accent-hover: #0073e6;
+      --accent-subtle: rgba(0, 132, 255, 0.14);
+      --handle: #ff4d4f;
+      --root: #ffa940;
+      --pole: #b37feb;
+      --text-main: #e8e8ea;
+      --text-muted: #9c9ca4;
+      --text-faint: #6e6e76;
+      --radius: 6px;
+      --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      background: var(--bg-deep);
+      color: var(--text-main);
+      font-family: var(--font);
+      font-size: 15px;
+      line-height: 1.6;
+    }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .wrap { max-width: 1120px; margin: 0 auto; padding: 0 20px; }
+
+    header.top {
+      position: sticky; top: 0; z-index: 10;
+      background: rgba(24, 24, 26, 0.88);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid var(--border-color);
+    }
+    header.top .wrap { display: flex; align-items: center; justify-content: space-between; height: 56px; }
+    .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; color: var(--text-main); }
+    .brand img { width: 28px; height: 28px; }
+    nav.links { display: flex; gap: 20px; font-size: 14px; }
+    nav.links a { color: var(--text-muted); }
+    nav.links a:hover { color: var(--text-main); text-decoration: none; }
+
+    .hero { padding: 72px 0 40px; text-align: center; }
+    .hero img.icon { width: 96px; height: 96px; }
+    .hero h1 { font-size: clamp(32px, 5vw, 52px); line-height: 1.1; margin: 18px 0 12px; letter-spacing: -0.02em; }
+    .hero p.lede { font-size: 18px; color: var(--text-muted); max-width: 660px; margin: 0 auto 28px; }
+    .cta { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+    .btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 11px 20px; border-radius: var(--radius);
+      font-weight: 600; font-size: 15px; border: 1px solid transparent;
+    }
+    .btn.primary { background: var(--accent); color: #fff; }
+    .btn.primary:hover { background: var(--accent-hover); text-decoration: none; }
+    .btn.ghost { border-color: var(--border-subtle); color: var(--text-main); background: var(--bg-panel); }
+    .btn.ghost:hover { border-color: var(--accent); text-decoration: none; }
+    .shot {
+      margin: 44px auto 0; max-width: 1040px;
+      border-radius: 10px; overflow: hidden;
+      border: 1px solid var(--border-subtle);
+      box-shadow: 0 30px 80px rgba(0, 0, 0, 0.55);
+    }
+    .shot img { display: block; width: 100%; height: auto; }
+    .video { margin: 0; aspect-ratio: 16 / 9; background: #000; }
+    .video iframe { display: block; width: 100%; height: 100%; border: 0; }
+
+    section { padding: 64px 0; border-top: 1px solid var(--border-color); }
+    section h2 { font-size: 28px; margin: 0 0 8px; letter-spacing: -0.01em; }
+    section p.sub { color: var(--text-muted); margin: 0 0 32px; max-width: 680px; }
+
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 14px; }
+    .card {
+      background: var(--bg-panel); border: 1px solid var(--border-color);
+      border-left: 2px solid var(--accent);
+      border-radius: var(--radius); padding: 18px 18px 16px;
+    }
+    .card h3 { margin: 0 0 6px; font-size: 16px; display: flex; align-items: center; gap: 8px; }
+    .card p { margin: 0; color: var(--text-muted); font-size: 14px; }
+    .dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; border: 2px solid #0a0a0c; flex-shrink: 0; }
+
+    .gallery { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px; }
+    figure { margin: 0; background: var(--bg-panel); border: 1px solid var(--border-color); border-radius: var(--radius); overflow: hidden; }
+    figure img { display: block; width: 100%; height: auto; }
+    figcaption { padding: 10px 14px; font-size: 13px; color: var(--text-muted); }
+
+    ul.checks { list-style: none; padding: 0; margin: 0; display: grid; gap: 10px; max-width: 760px; }
+    ul.checks li { padding-left: 28px; position: relative; color: var(--text-muted); }
+    ul.checks li b { color: var(--text-main); }
+    ul.checks li::before { content: "✓"; position: absolute; left: 4px; color: #10b981; font-weight: 700; }
+
+    table { border-collapse: collapse; width: 100%; max-width: 760px; font-size: 14px; }
+    td { padding: 9px 12px; border-bottom: 1px solid var(--border-color); color: var(--text-muted); }
+    td:first-child { width: 220px; }
+    kbd {
+      font-family: var(--mono); font-size: 12px; color: var(--text-main);
+      background: var(--bg-input); border: 1px solid var(--border-subtle);
+      border-radius: 3px; padding: 1px 6px; white-space: nowrap;
+    }
+    pre {
+      background: var(--bg-input); border: 1px solid var(--border-color); border-radius: var(--radius);
+      padding: 16px 18px; overflow-x: auto; font-family: var(--mono); font-size: 13px; color: var(--text-main);
+      max-width: 760px;
+    }
+    .note {
+      max-width: 760px; margin-top: 18px; padding: 12px 14px; border-radius: var(--radius);
+      background: rgba(245, 158, 11, 0.08); border: 1px solid rgba(245, 158, 11, 0.35);
+      color: #fde68a; font-size: 14px;
+    }
+    footer { padding: 32px 0 48px; color: var(--text-faint); font-size: 13px; border-top: 1px solid var(--border-color); }
+    footer .wrap { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+
+    @media (max-width: 640px) {
+      nav.links { display: none; }
+      .hero { padding-top: 48px; }
+      td:first-child { width: auto; }
+    }
+  </style>
+</head>
+<body>
+  <header class="top">
+    <div class="wrap">
+      <a class="brand" href="#"><img src="icon.png" alt="" /> MeshRig</a>
+      <nav class="links">
+        <a href="#how">How it works</a>
+        <a href="#features">Features</a>
+        <a href="#keys">Keys</a>
+        <a href="https://github.com/stuyk/meshrig">GitHub</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <div class="wrap hero">
+      <img class="icon" src="icon.png" alt="MeshRig icon" />
+      <h1>Rig any mesh in minutes</h1>
+      <p class="lede">Open a .blend, pick a starting skeleton, drag what it got wrong, skin it, test it, save it. MeshRig writes a normal Blender armature with vertex groups and IK, so the rig works everywhere a Blender rig does.</p>
+      <div class="cta">
+        <a class="btn primary" href="https://github.com/stuyk/meshrig/releases">Download</a>
+        <a class="btn ghost" href="https://github.com/stuyk/meshrig">View source</a>
+      </div>
+      <div class="shot"><img src="screenshots/skeleton.png" alt="A humanoid skeleton fitted to a mannequin" /></div>
+    </div>
+
+    <section id="how">
+      <div class="wrap">
+        <h2>Four steps</h2>
+        <p class="sub">The sidebar walks you through them. Each step can be redone at any time; everything is undoable.</p>
+        <div class="grid">
+          <div class="card"><h3>1 · Skeleton</h3><p>Pick Humanoid, Four legs, Chain or One bone. MeshRig reads the model's outline to find the crotch, neck, hands and legs, and centres every joint inside the mesh. Drag what's off; the other side follows.</p></div>
+          <div class="card"><h3>2 · Parts</h3><p>For armour, props and robots: select a bone and click the pieces it should carry, or give every object or loose piece a bone of its own in one click.</p></div>
+          <div class="card"><h3>3 · Skin</h3><p>Automatic weights measured through the model's volume, so they work on messy meshes and loose pieces. Or Blender's own bone heat, rigid pieces, or nearest bone. Fix the rest with the weight brush.</p></div>
+          <div class="card"><h3>4 · Test</h3><p>Pose the skinned rig by dragging hands and feet, or run the stress test to bend every joint in turn. Then save into the .blend.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="wrap">
+        <div class="gallery">
+          <figure><img src="screenshots/weights.png" alt="Weights of the forearm as a heat map" /><figcaption>What each bone moves, as a heat map.</figcaption></figure>
+          <figure><img src="screenshots/pose.png" alt="Posing with IK" /><figcaption>Drag a hand or foot: the IK bends elbows back and knees forward.</figcaption></figure>
+          <figure><img src="screenshots/quadruped.png" alt="A four-legged skeleton fitted to a dog" /><figcaption>Four legs, spine, neck, head and tail, found on the model.</figcaption></figure>
+          <figure><img src="screenshots/parts.png" alt="A robot arm with a bone per part" /><figcaption>A bone per part, chained by which parts touch.</figcaption></figure>
+        </div>
+      </div>
+    </section>
+
+    <section id="features">
+      <div class="wrap">
+        <h2>What it does</h2>
+        <ul class="checks">
+          <li><b>Snaps joints inside the mesh.</b> Click or drag on the model and the joint goes to the middle of the limb under the cursor, not onto its surface. Hold <kbd>Ctrl</kbd> to place it freely.</li>
+          <li><b>Symmetry.</b> Bones named .L/.R are edited in pairs. New bones off the centre line get a mirrored twin.</li>
+          <li><b>Build your own.</b> Add bone extends the selected bone with a click; Draw chain turns a stroke along a tail or tentacle into a chain.</li>
+          <li><b>IK that just works.</b> Arms and legs get IK targets and poles. MeshRig works out which way knees and elbows bend, rolls the bones to match, and calibrates the pole angle in Blender so the rest pose doesn't move.</li>
+          <li><b>Small pieces stay rigid.</b> Eyes, buttons and teeth follow one bone instead of stretching.</li>
+          <li><b>Reopens exactly.</b> MeshRig stores its skeleton on the armature. Open the file again and carry on where you left off. Rigs made elsewhere open too; their IK becomes MeshRig IK.</li>
+          <li><b>Safe saves.</b> The .blend is backed up to <code>.meshrig-backups/</code> before each save, and the last 20 copies are kept.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="keys">
+      <div class="wrap">
+        <h2>Keys</h2>
+        <table>
+          <tr><td><kbd>1</kbd>–<kbd>4</kbd></td><td>Skeleton / Parts / Skin / Test</td></tr>
+          <tr><td><kbd>Q</kbd> <kbd>E</kbd> <kbd>C</kbd> <kbd>B</kbd></td><td>Select, Add bone, Draw chain, Bind pieces</td></tr>
+          <tr><td><kbd>Shift</kbd>+click</td><td>Start a new chain (Add bone)</td></tr>
+          <tr><td><kbd>X</kbd> / <kbd>S</kbd> / <kbd>N</kbd></td><td>Symmetry / Snap inside / Bone names</td></tr>
+          <tr><td><kbd>Del</kbd></td><td>Delete bone</td></tr>
+          <tr><td><kbd>Num 1</kbd> <kbd>Num 3</kbd> <kbd>Num 7</kbd></td><td>Front / side / top view</td></tr>
+          <tr><td><kbd>F</kbd></td><td>Frame the model or the selected bone</td></tr>
+          <tr><td><kbd>Ctrl</kbd>+<kbd>Z</kbd> / <kbd>Ctrl</kbd>+<kbd>S</kbd></td><td>Undo / Save</td></tr>
+          <tr><td>Right-drag / Shift+right-drag / wheel</td><td>Orbit / pan / zoom</td></tr>
+        </table>
+      </div>
+    </section>
+
+    <section>
+      <div class="wrap">
+        <h2>Requirements</h2>
+        <p class="sub">MeshRig runs <a href="https://www.blender.org/download/">Blender</a> in the background to read and write .blend files. Tested with Blender 5.2. It finds Blender on its own, or you can pick it in Preferences.</p>
+        <div class="note">Models should stand on the ground facing −Y (Blender's front view). The automatic fits use that to tell front from back.</div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="wrap">
+      <span>MeshRig · GPL-3.0-or-later</span>
+      <a href="https://github.com/stuyk/meshrig">github.com/stuyk/meshrig</a>
+    </div>
+  </footer>
+</body>
+</html>

@@ -1,0 +1,102 @@
+import type { JSX } from 'solid-js'
+
+export {
+  FolderOpen as FolderOpenIcon,
+  RefreshCw as RefreshCwIcon,
+  X as XIcon,
+  Search as SearchIcon,
+  ChevronDown as ChevronDownIcon,
+  ChevronRight as ChevronRightIcon,
+  HelpCircle as HelpCircleIcon,
+  Settings as SettingsIcon,
+  SquareTerminal as DevConsoleIcon,
+  Eye as EyeIcon,
+  EyeOff as EyeOffIcon,
+  Plus as PlusIcon,
+  Check as CheckIcon,
+  Focus as FocusIcon,
+  Trash2 as TrashIcon,
+  Clock as ClockIcon,
+  Bone as BoneIcon,
+  MousePointer2 as SelectIcon,
+  Spline as ChainIcon,
+  Link as BindIcon,
+  Unlink as UnbindIcon,
+  Puzzle as PartsIcon,
+  PersonStanding as FigureIcon,
+  Dog as QuadrupedIcon,
+  Worm as TailIcon,
+  Box as SingleIcon,
+  Square as EmptyIcon,
+  WandSparkles as AutoIcon,
+  Activity as StressIcon,
+  Play as PlayIcon,
+  RotateCcw as ResetIcon,
+  FlipHorizontal2 as MirrorIcon,
+  Undo2 as UndoIcon,
+  Redo2 as RedoIcon,
+  Save as SaveIcon,
+  Crosshair as CenterIcon,
+  Magnet as MagnetIcon,
+  Paintbrush as WeightsIcon,
+  Brush as BrushIcon,
+  Split as SplitIcon,
+  Target as IkIcon,
+  Tag as TagIcon,
+  Boxes as PiecesIcon,
+  Combine as JoinIcon,
+  Camera as CameraIcon
+} from 'lucide-solid'
+
+/** MeshRig's mark: a figure with its skeleton drawn through it (same as build/icon.svg). */
+export function AppIcon(props: { size?: number; class?: string }): JSX.Element {
+  const s = (): number => props.size || 24
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 128 128"
+      width={s()}
+      height={s()}
+      class={props.class}
+      style={{ 'flex-shrink': '0' }}
+    >
+      <rect width="128" height="128" rx="28" fill="#1e2430" />
+      {/* Mesh: thick strokes along the same paths as the bones, so every bone sits inside its limb */}
+      <g fill="none" stroke="#46526a" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M64 46 L64 70" stroke-width="30" />
+        <path d="M51 47 L39 63 L31 79 M77 47 L89 63 L97 79" stroke-width="12" />
+        <path d="M57 76 L55 95 L53 111 M71 76 L73 95 L75 111" stroke-width="15" />
+      </g>
+      <circle cx="64" cy="25" r="13" fill="#46526a" />
+      {/* Skeleton */}
+      <g
+        fill="none"
+        stroke="#e8e8ea"
+        stroke-width="3.5"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <path d="M64 32 L64 74" />
+        <path d="M64 46 L51 47 L39 63 L31 79 M64 46 L77 47 L89 63 L97 79" />
+        <path d="M64 74 L57 76 L55 95 L53 111 M64 74 L71 76 L73 95 L75 111" />
+      </g>
+      <g fill="#e8e8ea" stroke="#1e2430" stroke-width="2">
+        <circle cx="64" cy="32" r="4" />
+        <circle cx="39" cy="63" r="4" />
+        <circle cx="89" cy="63" r="4" />
+        <circle cx="55" cy="95" r="4" />
+        <circle cx="73" cy="95" r="4" />
+      </g>
+      <g fill="#0084ff" stroke="#1e2430" stroke-width="2.5">
+        <circle cx="64" cy="46" r="5.5" />
+        <circle cx="64" cy="74" r="5.5" />
+      </g>
+      <g fill="#ffa940" stroke="#1e2430" stroke-width="2.5">
+        <circle cx="31" cy="79" r="5.5" />
+        <circle cx="97" cy="79" r="5.5" />
+        <circle cx="53" cy="111" r="5.5" />
+        <circle cx="75" cy="111" r="5.5" />
+      </g>
+    </svg>
+  )
+}

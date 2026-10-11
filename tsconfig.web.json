@@ -1,0 +1,14 @@
+{
+  "extends": "@electron-toolkit/tsconfig/tsconfig.web.json",
+  "include": [
+    "src/renderer/**/*.ts",
+    "src/renderer/**/*.tsx",
+    "src/preload/*.d.ts",
+    "src/shared/**/*"
+  ],
+  "compilerOptions": {
+    "composite": true,
+    "jsx": "preserve",
+    "jsxImportSource": "solid-js"
+  }
+}
