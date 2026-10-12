@@ -7,6 +7,7 @@ import {
   moveJoint,
   sideOf,
   symmetrize,
+  symmetryPlane,
   uniqueName
 } from './skeleton'
 
@@ -81,5 +82,23 @@ describe('editing', () => {
     const out = deleteBones([a, b, c], new Set([b.id]))
     expect(out.find((x) => x.id === c.id)!.parent).toBe(a.id)
     expect(out.find((x) => x.id === c.id)!.connected).toBe(false)
+  })
+})
+
+describe('symmetry plane', () => {
+  const l = makeBone({ name: 'thigh.l', head: [0.3, 0, 1], tail: [0.3, 0, 0.5] })
+  const r = makeBone({ name: 'thigh.r', head: [-0.1, 0, 1], tail: [-0.1, 0, 0.5] })
+
+  it('comes from the left/right pairs when there are any', () => {
+    expect(symmetryPlane([l, r], -2, 5)).toBeCloseTo(0.1)
+  })
+
+  it('stays at x = 0 for a lopsided model that straddles it', () => {
+    // A sword out to the right would put the box centre at 0.6.
+    expect(symmetryPlane([], -0.4, 1.6)).toBe(0)
+  })
+
+  it('uses the middle of a model that sits off to one side', () => {
+    expect(symmetryPlane([], 2, 4)).toBe(3)
   })
 })

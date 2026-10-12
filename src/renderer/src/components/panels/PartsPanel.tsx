@@ -107,18 +107,37 @@ function BoundDot(props: { partKey: PartKey }): JSX.Element {
   )
 }
 
+/** ✕ that releases an attached piece (back to skinned); keeps its space when there's nothing to release. */
+function DetachButton(props: { partKey: PartKey }): JSX.Element {
+  const bound = (): boolean => !!rig.bindings()[props.partKey]
+  return (
+    <button
+      type="button"
+      class={`w-4 shrink-0 text-center cursor-pointer ${
+        bound() ? 'text-[var(--text-muted)] hover:text-red-300' : 'invisible'
+      }`}
+      title={t('inspector.detach')}
+      disabled={!bound()}
+      onClick={() => rig.bindPart(props.partKey, null)}
+    >
+      ✕
+    </button>
+  )
+}
+
 function BindSelect(props: { partKey: PartKey; disabled?: boolean }): JSX.Element {
   const options = (): { value: string; label: string }[] => [
     { value: '', label: t('parts.auto') },
-    ...rig
-      .bones()
-      .filter((b) => b.deform)
-      .map((b) => ({ value: b.id, label: b.name }))
+    // Every bone: picking one that doesn't deform (a helper) switches it to deforming.
+    ...rig.bones().map((b) => ({
+      value: b.id,
+      label: b.deform ? b.name : t('parts.helperBone', { bone: b.name })
+    }))
   ]
   return (
     <Select
       size="xs"
-      class="w-32 shrink-0"
+      class="w-28 shrink-0"
       disabled={props.disabled}
       value={rig.bindings()[props.partKey] ?? ''}
       onChange={(v) => rig.bindPart(props.partKey, (v as string) || null)}
@@ -168,9 +187,27 @@ export default function PartsPanel(props: { notify: Notify }): JSX.Element {
             </p>
           </Show>
           <Show when={rig.selectedBone()}>
-            <p class="text-[11px] px-2 py-1.5 rounded-[var(--ui-radius)] bg-[var(--accent-color)]/10 border border-[var(--accent-color)]/40">
-              {t('parts.clickToBind', { bone: rig.boneMap().get(rig.selectedBone()!)?.name ?? '' })}
-            </p>
+            <div class="flex flex-col gap-1.5 text-[11px] px-2 py-1.5 rounded-[var(--ui-radius)] bg-[var(--accent-color)]/10 border border-[var(--accent-color)]/40">
+              <span>
+                {t('parts.clickToBind', {
+                  bone: rig.boneMap().get(rig.selectedBone()!)?.name ?? ''
+                })}
+              </span>
+              <Show when={rig.attachedTo(rig.selectedBone()!).length > 0}>
+                <div class="flex items-center justify-between gap-2">
+                  <span class="text-[var(--text-muted)]">
+                    {t('inspector.attached', { count: rig.attachedTo(rig.selectedBone()!).length })}
+                  </span>
+                  <button
+                    type="button"
+                    class="text-[var(--text-muted)] hover:text-red-300 underline cursor-pointer"
+                    onClick={() => rig.detachAll(rig.selectedBone()!)}
+                  >
+                    {t('inspector.detachAll')}
+                  </button>
+                </div>
+              </Show>
+            </div>
           </Show>
         </div>
       </PanelSection>
@@ -211,10 +248,10 @@ export default function PartsPanel(props: { notify: Notify }): JSX.Element {
                       type="button"
                       class={`flex-1 min-w-0 text-left truncate cursor-pointer ${out() ? 'line-through text-[var(--text-muted)]' : ''}`}
                       onClick={(e) => rig.selectPart(key, adds(e))}
-                      title={t('parts.stats', {
+                      title={`${part.name}: ${t('parts.stats', {
                         verts: part.positions.length / 3,
                         pieces: pieceCount(part)
-                      })}
+                      })}`}
                     >
                       {part.name}
                     </button>
@@ -235,6 +272,7 @@ export default function PartsPanel(props: { notify: Notify }): JSX.Element {
                     </Show>
                     <BoundDot partKey={key} />
                     <BindSelect partKey={key} disabled={out()} />
+                    <DetachButton partKey={key} />
                   </div>
                   <Show when={split() && !out()}>
                     <div class="ml-6 border-l border-[var(--border-color)]">
@@ -264,6 +302,7 @@ export default function PartsPanel(props: { notify: Notify }): JSX.Element {
                               </button>
                               <BoundDot partKey={k} />
                               <BindSelect partKey={k} />
+                              <DetachButton partKey={k} />
                             </div>
                           )
                         }}

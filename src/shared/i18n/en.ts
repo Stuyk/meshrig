@@ -252,6 +252,9 @@ export const en = {
     autoIkHelp: 'Adds IK to limbs that reach the ground, and to forearms and shins',
     autoIkDone: { one: 'Added 1 IK chain.', other: 'Added {count} IK chains.' },
     autoIkNone: 'No new limbs for IK found.',
+    deforms: 'Deforms the mesh',
+    noDeform:
+      'Doesn’t deform the mesh (a helper like root). Turn on “Deforms mesh” in the Bone panel to change that.',
     attachedCount: { one: '1 piece attached', other: '{count} pieces attached' },
     symmetrize: 'Mirror L → R',
     symmetrizeHelp: 'Copies every left (.L) bone to the right side',
@@ -293,6 +296,10 @@ export const en = {
     selectAttached: 'Select',
     detachAll: 'Detach all',
     detach: 'Detach (skin it normally)',
+    mirroredOn: 'Mirrored with {twin}: edits change both.',
+    mirroredOff: 'Twin of {twin}. Symmetry is off: only this side changes.',
+    editOneSide: 'Edit one side (X)',
+    editBothSides: 'Edit both (X)',
     deleteBranch: 'Delete branch',
     deleteBranchHelp: 'Deletes this bone and every bone under it'
   },
@@ -356,6 +363,7 @@ export const en = {
     piece: 'Piece {n} · {verts} verts',
     more: '…and {count} more. Click them in the viewport.',
     pieceOf: '{object} · piece {n}',
+    helperBone: '{bone} (turns on deform)',
     multiHint: 'Shift+click pieces (here or in the viewport) to select several and join them.',
     selected: { one: '1 piece selected', other: '{count} pieces selected' },
     clearSelection: 'Clear',

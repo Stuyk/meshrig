@@ -229,6 +229,19 @@ export async function openRigDocument(
   // Objects hidden in Blender start out of the rig; usually helpers or references.
   if (!fromMeshRig) {
     spec.excluded = meta.objects.filter((o) => !o.visible).map((o) => o.name)
+    // Objects parented to a bone in Blender (Ctrl+P > Bone) follow it rigidly:
+    // that's an attachment here, shown and editable like one.
+    for (const o of meta.objects) {
+      const bone = o.parentBone && o.parent === arm?.name ? idByName.get(o.parentBone) : undefined
+      if (bone) {
+        spec.bindings[o.name] = bone
+      }
+    }
+    // Bone parenting works with any bone; MeshRig's vertex groups need deforming ones.
+    const carrying = new Set(Object.values(spec.bindings))
+    spec.bones = spec.bones.map((b) =>
+      carrying.has(b.id) && !b.deform ? { ...b, deform: true } : b
+    )
   }
 
   // Weights already in the file.

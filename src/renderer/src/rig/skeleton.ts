@@ -378,6 +378,32 @@ export function translateAll(bones: Bone[], delta: Vec3): Bone[] {
   return bones.map((b) => ({ ...b, head: add(b.head, delta), tail: add(b.tail, delta) }))
 }
 
+/**
+ * Where left and right mirror (x = cx). The skeleton knows best: the middle
+ * of its .L/.R pairs. Without pairs, x = 0 when the model sits across it
+ * (Blender's mirror plane; a prop in one hand mustn't move it), else the
+ * middle of the model.
+ */
+export function symmetryPlane(bones: Bone[], minX: number, maxX: number): number {
+  const byName = new Map(bones.map((b) => [b.name, b]))
+  const mids: number[] = []
+  for (const b of bones) {
+    const twin = sideOf(b.name) === 'L' ? byName.get(mirrorName(b.name) ?? '') : undefined
+    if (twin) {
+      mids.push((b.head[0] + twin.head[0]) / 2, (b.tail[0] + twin.tail[0]) / 2)
+    }
+  }
+  if (mids.length) {
+    mids.sort((a, b) => a - b)
+    return mids[Math.floor(mids.length / 2)]
+  }
+  const width = Math.max(maxX - minX, 1e-9)
+  if (minX < -0.1 * width && maxX > 0.1 * width) {
+    return 0
+  }
+  return (minX + maxX) / 2
+}
+
 /** A stable string for "has the deforming skeleton changed since X". */
 export function skeletonSignature(bones: Bone[]): string {
   const r = (v: Vec3): string => v.map((x) => x.toFixed(5)).join(',')

@@ -271,10 +271,15 @@ function BoneTree(): JSX.Element {
             }`}
             style={{ 'padding-left': `${8 + row.depth * 10}px` }}
           >
-            <BoneIcon
-              size={11}
-              class={row.bone.deform ? 'text-[var(--text-muted)]' : 'text-amber-400/70'}
-            />
+            <span
+              class="flex shrink-0"
+              title={row.bone.deform ? t('skeleton.deforms') : t('skeleton.noDeform')}
+            >
+              <BoneIcon
+                size={11}
+                class={row.bone.deform ? 'text-[var(--text-muted)]' : 'text-amber-400/70'}
+              />
+            </span>
             <span class="truncate">{row.bone.name}</span>
             <span class="ml-auto flex items-center gap-1.5 shrink-0">
               <Show when={rig.attachedTo(row.bone.id).length > 0}>

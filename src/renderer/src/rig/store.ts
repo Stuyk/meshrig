@@ -25,6 +25,7 @@ import {
   sideForX,
   skeletonSignature,
   subtreeIds,
+  symmetryPlane,
   symmetrize,
   uniqueName,
   withSide,
@@ -203,14 +204,10 @@ function createRigStore() {
     const list = includedParts()
     return list.length ? new MeshProbe(list) : null
   })
-  /** The symmetry plane: x = 0 unless the model clearly sits elsewhere. */
+  /** The symmetry plane x = cx; see symmetryPlane(). */
   const cx = createMemo(() => {
     const p = probe()
-    if (!p) {
-      return 0
-    }
-    const c = (p.bounds.min[0] + p.bounds.max[0]) / 2
-    return Math.abs(c) < p.diagonal * 0.02 ? 0 : c
+    return symmetryPlane(bones(), p?.bounds.min[0] ?? -1, p?.bounds.max[0] ?? 1)
   })
   const boneMap = createMemo(() => byId(bones()))
   /** The grid step in use: the set size, or a round number near 1/40 of the model. */
@@ -666,6 +663,11 @@ function createRigStore() {
 
   // --- parts -------------------------------------------------------------------------
 
+  /**
+   * Attaches a piece to a bone (null: back to skinned). A bone that carries a
+   * piece has to deform, or the piece would get no weights at all; a helper
+   * bone is switched to deforming.
+   */
   function bindPart(key: PartKey, bone: string | null): void {
     const next = { ...bindings() }
     if (bone) {
@@ -673,7 +675,13 @@ function createRigStore() {
     } else {
       delete next[key]
     }
-    commit({ bindings: next })
+    const target = bone ? boneMap().get(bone) : undefined
+    commit({
+      bindings: next,
+      ...(target && !target.deform
+        ? { bones: bones().map((b) => (b.id === bone ? { ...b, deform: true } : b)) }
+        : {})
+    })
   }
 
   function setPartExcluded(name: string, out: boolean): void {

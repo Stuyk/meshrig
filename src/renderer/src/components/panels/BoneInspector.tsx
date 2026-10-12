@@ -4,7 +4,7 @@ import type { Bone, BoneRole, PartKey, PoleMode } from '../../rig/types'
 import { parseKey } from '../../rig/parts'
 import { boneCss } from '../../rig/colors'
 import { defaultIk } from '../../rig/controls'
-import { subtreeIds } from '../../rig/skeleton'
+import { mirrorName, subtreeIds } from '../../rig/skeleton'
 import { Button, PanelSection, Select, Slider, ToggleSwitch } from '../ui'
 import { CenterIcon, FocusIcon, IkIcon, TrashIcon, BoneIcon } from '../icons'
 import { t } from '../../i18n'
@@ -76,6 +76,7 @@ export default function BoneInspector(props: { bone: Bone }): JSX.Element {
           }}
           title={t('inspector.nameHelp')}
         />
+        <MirrorNote bone={b()} />
         <div class={row}>
           <span class="text-[var(--text-muted)]">{t('inspector.role')}</span>
           <Select
@@ -282,5 +283,42 @@ function AttachedPieces(props: { bone: Bone }): JSX.Element {
         </div>
       </Show>
     </div>
+  )
+}
+
+/**
+ * Says when a bone has a mirror twin, and whether edits reach it: with
+ * Symmetry on, editing one side edits both.
+ */
+function MirrorNote(props: { bone: Bone }): JSX.Element {
+  const twin = (): Bone | undefined => {
+    const name = mirrorName(props.bone.name)
+    return name ? rig.bones().find((x) => x.name === name) : undefined
+  }
+  return (
+    <Show when={twin()}>
+      {(tw) => (
+        <div
+          class={`flex items-center justify-between gap-2 px-2 py-1.5 rounded-[var(--ui-radius)] border text-[11px] ${
+            rig.symmetry()
+              ? 'border-[var(--accent-color)]/40 bg-[var(--accent-color)]/10'
+              : 'border-[var(--border-color)] bg-[var(--bg-input)] text-[var(--text-muted)]'
+          }`}
+        >
+          <span>
+            {rig.symmetry()
+              ? t('inspector.mirroredOn', { twin: tw().name })
+              : t('inspector.mirroredOff', { twin: tw().name })}
+          </span>
+          <button
+            type="button"
+            class="shrink-0 underline cursor-pointer text-[var(--text-muted)] hover:text-[var(--text-main)]"
+            onClick={() => rig.setSymmetry(!rig.symmetry())}
+          >
+            {rig.symmetry() ? t('inspector.editOneSide') : t('inspector.editBothSides')}
+          </button>
+        </div>
+      )}
+    </Show>
   )
 }
