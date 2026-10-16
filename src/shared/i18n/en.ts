@@ -498,7 +498,7 @@ export const en = {
       bind: 'Bind pieces tool',
       symmetry: 'Symmetry on/off',
       snap: 'Snap inside mesh on/off',
-      snapFlip: 'Flip snapping for one drag',
+      snapFlip: 'Flip inside-mesh snapping for one drag (front/side/top: centre inside the mesh)',
       names: 'Bone names',
       attached: 'Show which bone each piece is attached to',
       delete: 'Delete bone',

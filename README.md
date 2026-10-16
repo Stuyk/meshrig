@@ -41,7 +41,7 @@ Then **Save rig to .blend**.
 
 ## Features
 
-- **Joints snap inside the mesh.** When you click or drag on the model, the joint goes to the middle of the limb under the cursor, not onto its surface. Hold Ctrl to place it freely.
+- **Joints snap inside the mesh.** When you click or drag on the model, the joint goes to the middle of the limb under the cursor, not onto its surface. Hold Ctrl to place it freely. In front, side and top views a dragged joint keeps its depth, so it stays on axis; hold Ctrl there to centre it inside the mesh.
 - **Flat views and snapping.** Front, side and top views (Numpad 1/3/7) go flat (orthographic) with a grid, so bones line up exactly; orbiting goes back to perspective, and Numpad 5 switches by hand. The Snap menu snaps joints to other joints, to the grid (automatic or fixed size), or turns bones in angle steps. Hold Shift while dragging to place freely.
 - **See what's attached.** Press P (or the Pieces button) to colour every attached piece by its bone. Hover or select a bone and its pieces light up while the rest go dark. The bone list shows a 🔗 count per bone, and the Bone panel lists its pieces with Select and Detach.
 - **Join pieces.** Shift+click pieces in the Parts list or the viewport and press Join (Ctrl+J). They merge into the biggest object, optionally welding touching vertices so they bend as one surface. Your .blend only changes when you save the rig, and Ctrl+Z separates them again.
@@ -73,7 +73,7 @@ Then **Save rig to .blend**.
 | Q / E / C / B | Select, Add bone, Draw chain, Bind pieces |
 | Shift+click | Start a new chain (Add bone) |
 | X | Symmetry on / off |
-| S | Snap inside the mesh on / off (hold Ctrl to switch it for one drag) |
+| S | Snap inside the mesh on / off (hold Ctrl to switch it for one drag; front/side/top drags keep depth unless Ctrl is held) |
 | N | Bone names |
 | P | Colour pieces by the bone they're attached to |
 | Shift+click | Select several pieces (Parts) |

@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.2.1
+
+### Fixes
+
+- Dragging a joint or bone in front, side or top view keeps its depth, so it stays on the axis you're looking down instead of drifting as the cursor passes over other parts of the mesh. Hold Ctrl to centre it inside the mesh anyway.
+
 ## v0.2.0
 
 ### Placing bones

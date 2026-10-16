@@ -724,6 +724,40 @@ export class RigEngine {
     return [d.x, d.y, d.z]
   }
 
+  /** The view direction for dragging, squared onto the world axis in front, side and top views. */
+  private dragNormal(): Vec3 {
+    const n = this.viewNormal()
+    if (!isAxisView(n)) {
+      return n
+    }
+    const axis = dominantAxis(n)
+    return [0, 1, 2].map((i) => (i === axis ? Math.sign(n[i]) : 0)) as Vec3
+  }
+
+  /**
+   * Where a dragged joint goes. In front, side and top views it keeps its
+   * depth: the view can't show depth, so re-centring it inside the mesh moves
+   * it off axis unseen (Ctrl re-centres it anyway). Other views place it like
+   * a click.
+   */
+  private dragPoint(
+    e: { clientX: number; clientY: number; ctrlKey: boolean; metaKey: boolean },
+    normal: Vec3,
+    anchor: Vec3
+  ): Vec3 | null {
+    if (!isAxisView(normal)) {
+      return this.placePoint(e, anchor)
+    }
+    const ray = this.rayAt(e.clientX, e.clientY)
+    if (e.ctrlKey || e.metaKey) {
+      const p = this.s.probe()?.centerOnRay(ray.origin, ray.dir)
+      if (p) {
+        return p
+      }
+    }
+    return this.planeHit(ray, normal, anchor)
+  }
+
   private planeHit(ray: { origin: Vec3; dir: Vec3 }, normal: Vec3, through: Vec3): Vec3 | null {
     const denom = ray.dir[0] * normal[0] + ray.dir[1] * normal[1] + ray.dir[2] * normal[2]
     if (Math.abs(denom) < 1e-9) {
@@ -968,7 +1002,7 @@ export class RigEngine {
           kind: 'joint',
           boneId: b.id,
           end: joint.end,
-          normal: this.viewNormal(),
+          normal: this.dragNormal(),
           anchor: p,
           lockX: onPlane ? cx : null,
           moved: false,
@@ -985,12 +1019,13 @@ export class RigEngine {
           (b.head[1] + b.tail[1]) / 2,
           (b.head[2] + b.tail[2]) / 2
         ]
-        const start = this.planeHit(this.rayAt(e.clientX, e.clientY), this.viewNormal(), mid) ?? mid
+        const normal = this.dragNormal()
+        const start = this.planeHit(this.rayAt(e.clientX, e.clientY), normal, mid) ?? mid
         this.s.beginEdit()
         this.startDrag({
           kind: 'bone',
           boneId: body,
-          normal: this.viewNormal(),
+          normal,
           startHit: start,
           startHead: [...b.head] as Vec3,
           moved: false
@@ -1075,7 +1110,7 @@ export class RigEngine {
       return
     }
     if (d.kind === 'joint') {
-      let p = this.placePoint(e, d.anchor)
+      let p = this.dragPoint(e, d.normal, d.anchor)
       if (!p) {
         return
       }
